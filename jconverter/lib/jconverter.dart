@@ -32,6 +32,7 @@ class _DefaultConvertKeysImpl implements JConverterKeys {
 const _defaultConvertKeys = _DefaultConvertKeysImpl();
 
 bool isSubtype<Child, Parent>() => <Child>[] is List<Parent>;
+dynamic directConvertFunc(dynamic any) => any;
 
 abstract class ConverterLoggerProtocol {
   void error(dynamic message, dynamic error, StackTrace? stackTrace);
@@ -97,8 +98,6 @@ class JConverter {
   JConverter() {
     _jsonCodec = JsonCodec(reviver: _reviver, toEncodable: _toEncodable);
   }
-
-  dynamic directConvertFunc(dynamic any) => any;
 
   Object? _reviver(Object? key, Object? value) {
     if (value is Map) {
