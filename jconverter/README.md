@@ -9,7 +9,7 @@ Add this into your `pubspec.yaml`
 dependencies:
   jconverter:
     git:
-      url: git@github.com:liplum/DartPackage.git
+      url: https://github.com/liplum/DartPackage.git
       path: jconverter
 ```
 
