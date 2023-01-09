@@ -5,6 +5,11 @@ abstract class JConvertibleProtocol {
   const JConvertibleProtocol();
 
   String get typeName => runtimeType.toString();
+}
+
+/// Extends this class to get default behaviour.
+abstract class JVersionableProtocol extends JConvertibleProtocol {
+  const JVersionableProtocol();
 
   int get version => 1;
 }
@@ -32,6 +37,7 @@ class _DefaultConvertKeysImpl implements JConverterKeys {
 const _defaultConvertKeys = _DefaultConvertKeysImpl();
 
 bool isSubtype<Child, Parent>() => <Child>[] is List<Parent>;
+
 dynamic directConvertFunc(dynamic any) => any;
 
 abstract class ConverterLoggerProtocol {
@@ -140,7 +146,7 @@ class JConverter {
         json = (object as dynamic).toJson();
       }
       json[keys.type] = type;
-      if (enableMigration) {
+      if (enableMigration && object is JVersionableProtocol) {
         json[keys.version] = object.version;
       }
       return json;
