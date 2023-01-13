@@ -41,9 +41,27 @@ bool isSubtype<Child, Parent>() => <Child>[] is List<Parent>;
 dynamic directConvertFunc(dynamic any) => any;
 
 abstract class ConverterLoggerProtocol {
-  void error(dynamic message, dynamic error, StackTrace? stackTrace);
+  void error(dynamic message, dynamic error, StackTrace? stacktrace);
 
   void info(String message);
+
+  static const ConverterLoggerProtocol toConsole = _JConverterLoggerToConsole();
+}
+
+class _JConverterLoggerToConsole implements ConverterLoggerProtocol {
+  const _JConverterLoggerToConsole();
+
+  @override
+  void error(message, error, StackTrace? stacktrace) {
+    print(message);
+    print(error);
+    print(stacktrace);
+  }
+
+  @override
+  void info(String message) {
+    print(message);
+  }
 }
 
 class JConverterLogger implements ConverterLoggerProtocol {
@@ -66,17 +84,27 @@ class JConverterLogger implements ConverterLoggerProtocol {
   }
 }
 
-class _ConvertibleProtocolEntry {
+abstract class _ConverterEntry {
+  ToJsonFunc? get toJson;
+
+  FromJsonFunc get fromJson;
+}
+
+class _ConvertibleProtocolEntry implements _ConverterEntry {
+  @override
   final ToJsonFunc? toJson;
+  @override
   final FromJsonFunc fromJson;
 
   const _ConvertibleProtocolEntry(this.toJson, this.fromJson);
 }
 
-class _TypeEntry {
+class _TypeEntry implements _ConverterEntry {
   final String typeName;
   final int version;
+  @override
   final ToJsonFunc? toJson;
+  @override
   final FromJsonFunc fromJson;
 
   const _TypeEntry(this.typeName, this.version, this.toJson, this.fromJson);
@@ -224,6 +252,89 @@ class JConverter {
       logger?.error("Failed to convert $T to json", any, stacktrace);
       return null;
     }
+  }
+
+  Map<String, dynamic>? toJsonObj<T>(T obj) {
+    Map<String, dynamic> json;
+    final ToJsonFunc? toJsonFunc;
+    final _ConverterEntry? entry;
+    if (obj is JConvertibleProtocol) {
+      entry = _typeName2Entry[obj.typeName];
+    } else {
+      entry = _type2Entry[T];
+    }
+    toJsonFunc = entry?.toJson;
+    if (toJsonFunc == null) {
+      try {
+        json = (obj as dynamic).toJson();
+      } catch (e, stacktrace) {
+        assert(false, "$T not registered.$e.$stacktrace");
+        logger?.error(e.toString(), e, stacktrace);
+        return null;
+      }
+    } else {
+      json = toJsonFunc(obj);
+    }
+    if (obj is JConvertibleProtocol) {
+      json[keys.type] = obj.typeName;
+      if (enableMigration && obj is JVersionableProtocol) {
+        json[keys.version] = obj.version;
+      }
+    } else if (entry is _TypeEntry) {
+      json[keys.type] = entry.typeName;
+      if (enableMigration) {
+        json[keys.version] = entry.version;
+      }
+    }
+    return json;
+  }
+
+  /// Only resolve JConvertibleProtocol obj
+  T? fromJsonObj<T extends JConvertibleProtocol>(Map<String, dynamic> json) {
+    final type = json[keys.type];
+    if (type == null) {
+      assert(false, "[Type Not Found] $json");
+      return null;
+    }
+    final entry = _typeName2Entry[type];
+    if (entry == null) {
+      assert(false, "$type not registered.");
+      return null;
+    }
+    if (enableMigration) {
+      final version = json[keys.version];
+      if (version is int) {
+        final migration = _migrations[type];
+        if (migration != null) {
+          json = migration(json.cast<dynamic, dynamic>(), version).cast<String, dynamic>();
+        }
+      }
+    }
+    return entry.fromJson(json);
+  }
+
+  /// Only resolve the exact registered type [T].
+  T? fromJsonObjExactTyped<T>(Map<String, dynamic> json) {
+    final type = json[keys.type];
+    if (type == null) {
+      assert(false, "[Type Not Found] $json");
+      return null;
+    }
+    final entry = _type2Entry[type];
+    if (entry == null) {
+      assert(false, "$type not registered.");
+      return null;
+    }
+    if (enableMigration) {
+      final version = json[keys.version];
+      if (version is int) {
+        final migration = _migrations[type];
+        if (migration != null) {
+          json = migration(json.cast<dynamic, dynamic>(), version).cast<String, dynamic>();
+        }
+      }
+    }
+    return entry.fromJson(json);
   }
 
   /// If [T] is a collection, please use [List.cast], [Map.cast] or [Set.cast] to make a runtime-casting view.
