@@ -199,7 +199,7 @@ class JConverter {
     }
   }
 
-  void registerTypeAuto<T>(FromJsonFunc<T> fromJson, [String? typeName, int version = 1]) {
+  void addTypedAuto<T>(FromJsonFunc<T> fromJson, [String? typeName, int version = 1]) {
     typeName = typeName ?? T.toString();
     if (_type2Entry.containsKey(typeName)) {
       logger?.info("$typeName has been registered and will be override.");
@@ -207,7 +207,7 @@ class JConverter {
     _type2Entry[T] = _TypeEntry(typeName, version, null, fromJson);
   }
 
-  void registerType<T>(FromJsonFunc<T> fromJson, ToJsonFunc? toJson, [String? typeName, int version = 1]) {
+  void addTyped<T>(FromJsonFunc<T> fromJson, ToJsonFunc? toJson, [String? typeName, int version = 1]) {
     typeName = typeName ?? T.toString();
     if (_type2Entry.containsKey(typeName)) {
       logger?.info("$typeName has been registered and will be override.");
@@ -215,7 +215,7 @@ class JConverter {
     _type2Entry[T] = _TypeEntry(typeName, version, toJson, fromJson);
   }
 
-  void registerConvertible<T extends JConvertibleProtocol>(
+  void add<T extends JConvertibleProtocol>(
       String typeName, FromJsonFunc<T> fromJson, ToJsonFunc? toJson) {
     if (_typeName2Entry.containsKey(typeName)) {
       logger?.info("$typeName has been registered and will be override.");
@@ -223,14 +223,14 @@ class JConverter {
     _typeName2Entry[typeName] = _ConvertibleProtocolEntry(toJson, fromJson);
   }
 
-  void registerConvertibleAuto<T extends JConvertibleProtocol>(String typeName, FromJsonFunc<T> fromJson) {
+  void addAuto<T extends JConvertibleProtocol>(String typeName, FromJsonFunc<T> fromJson) {
     if (_typeName2Entry.containsKey(typeName)) {
       logger?.info("$typeName has been registered and will be override.");
     }
     _typeName2Entry[typeName] = _ConvertibleProtocolEntry(null, fromJson);
   }
 
-  void registerMigration(String typeName, Migration migration) {
+  void migrate(String typeName, Migration migration) {
     if (enableMigration) {
       logger?.info("`enableMigration` is false now. Set it to true if migration is used later.");
     }

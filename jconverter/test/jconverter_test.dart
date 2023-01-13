@@ -35,9 +35,9 @@ void main() {
     final converter = JConverter();
     converter.enableMigration = true;
     final parentClz = Parent;
-    converter.registerConvertibleAuto(parentClz.toString(), Parent.fromJson);
+    converter.addAuto(parentClz.toString(), Parent.fromJson);
     final childClz = Child;
-    converter.registerConvertibleAuto(childClz.toString(), Child.fromJson);
+    converter.addAuto(childClz.toString(), Child.fromJson);
     test("toJson", () {
       const local = Parent('Liplum');
       final res = converter.toJson(local);
@@ -66,7 +66,7 @@ void main() {
     test("migration", () {
       const json =
           '[{"name":"Liplum","@type":"Parent","@version":1},{"name":"JConverter","extra":666,"@type":"Child","@version":1}]';
-      converter.registerMigration(childClz.toString(), (origin, oldVersion) {
+      converter.migrate(childClz.toString(), (origin, oldVersion) {
         if (oldVersion == 1) {
           origin["name"] = "MIGRATED";
         }
