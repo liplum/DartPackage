@@ -142,7 +142,7 @@ class JConverter {
       }
       final entry = _typeName2Entry[type];
       if (entry == null) {
-        throw Exception("No FromJson for ${value.runtimeType} was found.");
+        throw Exception("[JConverter] No fromJson for ${value.runtimeType} was found.");
       }
       if (enableMigration) {
         final version = value[keys.version];
@@ -164,7 +164,7 @@ class JConverter {
       final type = object.typeName;
       final entry = _typeName2Entry[type];
       if (entry == null) {
-        throw Exception("No ToJson for ${object.typeName} was found.");
+        throw Exception("[JConverter] No toJson for ${object.typeName} was found.");
       }
       final toJsonFunc = entry.toJson;
       final Map<String, dynamic> json;
