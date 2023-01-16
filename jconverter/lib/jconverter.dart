@@ -215,8 +215,7 @@ class JConverter {
     _type2Entry[T] = _TypeEntry(typeName, version, toJson, fromJson);
   }
 
-  void add<T extends JConvertibleProtocol>(
-      String typeName, FromJsonFunc<T> fromJson, ToJsonFunc? toJson) {
+  void add<T extends JConvertibleProtocol>(String typeName, FromJsonFunc<T> fromJson, ToJsonFunc? toJson) {
     if (_typeName2Entry.containsKey(typeName)) {
       logger?.info("$typeName has been registered and will be override.");
     }
@@ -268,7 +267,7 @@ class JConverter {
       try {
         json = (obj as dynamic).toJson();
       } catch (e, stacktrace) {
-        assert(false, "$T not registered.$e.$stacktrace");
+        assert(false, "[JConverter] $T not registered.$e.$stacktrace");
         logger?.error(e.toString(), e, stacktrace);
         return null;
       }
@@ -293,12 +292,12 @@ class JConverter {
   T? fromJsonObj<T extends JConvertibleProtocol>(Map<String, dynamic> json) {
     final type = json[keys.type];
     if (type == null) {
-      assert(false, "[Type Not Found] $json");
+      assert(false, '[JConverter] "${keys.type}" key not found in $json');
       return null;
     }
     final entry = _typeName2Entry[type];
     if (entry == null) {
-      assert(false, "$type not registered.");
+      assert(false, "[JConverter] $type not registered.");
       return null;
     }
     if (enableMigration) {
@@ -317,12 +316,12 @@ class JConverter {
   T? fromJsonObjExactTyped<T>(Map<String, dynamic> json) {
     final type = json[keys.type];
     if (type == null) {
-      assert(false, "[Type Not Found] $json");
+      assert(false, '[JConverter] "${keys.type}" key not found in $json');
       return null;
     }
     final entry = _type2Entry[type];
     if (entry == null) {
-      assert(false, "$type not registered.");
+      assert(false, "[JConverter] $type not registered.");
       return null;
     }
     if (enableMigration) {
