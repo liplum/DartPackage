@@ -197,7 +197,8 @@ class JConverter {
         try {
           // try default `toJson()`
           return object.toJson();
-        } catch (_) {
+        } catch (e, stacktrace) {
+          logger?.error(e.toString(), e, stacktrace);
           return object;
         }
       }
