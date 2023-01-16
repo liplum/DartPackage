@@ -194,7 +194,12 @@ class JConverter {
         }
         return json;
       } else {
-        return object;
+        try {
+          // try default `toJson()`
+          return object.toJson();
+        } catch (_) {
+          return object;
+        }
       }
     }
   }
